@@ -24,8 +24,14 @@ const requiredEnvVars = [
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`❌ Critical Error: ${envVar} environment variable is not set!`);
+    console.error(`❌ Please set ${envVar} in your Render dashboard under Environment Variables`);
     process.exit(1);
   }
+}
+
+// Validate JWT_SECRET is not a default/weak value
+if (process.env.JWT_SECRET && (process.env.JWT_SECRET.includes('secret') || process.env.JWT_SECRET.length < 10)) {
+  console.warn(`⚠️  Warning: JWT_SECRET should be a strong, random string of at least 32 characters`);
 }
 
 console.log('✅ All required environment variables are set');

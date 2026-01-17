@@ -14,6 +14,22 @@ const connectDB = require('./config/db');
 // Load env vars
 dotenv.config();
 
+// Validate critical environment variables
+const requiredEnvVars = [
+  'MONGODB_URI',
+  'JWT_SECRET',
+  'SHOPSMART_INTERNAL_API_KEY'
+];
+
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`❌ Critical Error: ${envVar} environment variable is not set!`);
+    process.exit(1);
+  }
+}
+
+console.log('✅ All required environment variables are set');
+
 // Security & Performance Middleware
 let securityMiddleware = null;
 let cacheMiddleware = null;

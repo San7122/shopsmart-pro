@@ -87,6 +87,18 @@ if (securityMiddleware) {
 // ============================================================
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve React Frontend
+const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+console.log('Client dist path:', clientDistPath);
+
+// Serve static files from React build
+app.use(express.static(clientDistPath));
+
+// Serve index.html for all other routes (React Router)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientDistPath, 'index.html'));
+});
+
 // ============================================================
 // HEALTH CHECK (No rate limiting)
 // ============================================================

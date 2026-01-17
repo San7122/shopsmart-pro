@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: shopsmart-pro-app
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/shopsmart-pro}
+      - JWT_SECRET=${JWT_SECRET:-default-jwt-secret-change-in-production}
+      - JWT_EXPIRE=${JWT_EXPIRE:-30d}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+      - SHOPSMART_INTERNAL_API_KEY=${SHOPSMART_INTERNAL_API_KEY}
+      - REDIS_URL=${REDIS_URL:-}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - API_URL=${API_URL:-http://localhost:5000}
+      - ENABLE_RATE_LIMIT_REDIS=${ENABLE_RATE_LIMIT_REDIS:-false}
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+    networks:
+      - shopsmart-network
+    volumes:
+      - ./server/logs:/app/server/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  mongo:
+    image: mongo:5
+    container_name: shopsmart-pro-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    restart: unless-stopped
+    networks:
+      - shopsmart-network
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
+
+  redis:
+    image: redis:7-alpine
+    container_name: shopsmart-pro-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - shopsmart-network
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  nginx:
+    image: nginx:alpine
+    container_name: shopsmart-pro-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - shopsmart-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  shopsmart-network:
+    driver: bridge
+
+# To run this configuration:
+# 1. Create a .env file with your environment variables
+# 2. Run: docker-compose up -d
+# 3. Access the app at http://localhost:5000

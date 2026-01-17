@@ -1,0 +1,273 @@
+{
+  "name": "ShopSmart - Daily Business Reports",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 19
+            }
+          ]
+        }
+      },
+      "id": "cron-7pm",
+      "name": "Daily 7 PM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SHOPSMART_API_URL}}/api/reports/daily-summary",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "date",
+              "value": "={{ $now.format('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-daily-stats",
+      "name": "Fetch Daily Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "ShopSmart API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "users",
+        "options": {}
+      },
+      "id": "split-users",
+      "name": "Split by User",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-activity",
+              "leftValue": "={{ $json.todayTransactions }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "has-activity",
+      "name": "Had Activity Today?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate daily report summary\nconst user = $input.item.json;\n\nconst report = {\n  userName: user.name,\n  userPhone: user.phone,\n  userEmail: user.email,\n  shopName: user.shopName,\n  \n  // Today's stats\n  todayCredit: user.todayCredit || 0,\n  todayPayment: user.todayPayment || 0,\n  todayTransactions: user.todayTransactions || 0,\n  \n  // Running totals\n  totalReceivables: user.totalReceivables || 0,\n  customersWithBalance: user.customersWithBalance || 0,\n  \n  // Change from yesterday\n  creditChange: user.todayCredit - user.todayPayment,\n  \n  // Formatted for message\n  reportDate: new Date().toLocaleDateString('hi-IN', {\n    weekday: 'long',\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric'\n  }),\n  \n  // Emoji indicators\n  creditEmoji: (user.todayCredit - user.todayPayment) > 0 ? '🔴' : '🟢',\n  trendEmoji: user.todayPayment > user.todayCredit ? '📈' : '📉'\n};\n\nreturn { json: report };"
+      },
+      "id": "prepare-report",
+      "name": "Prepare Report Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "={{$env.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "=+91{{ $json.userPhone }}",
+        "messageType": "text",
+        "textBody": "=📊 *{{ $json.shopName }} - Daily Report*\n📅 {{ $json.reportDate }}\n\n━━━━━━━━━━━━━━━━\n*Aaj Ka Summary:*\n\n💰 Credit Diya: ₹{{ $json.todayCredit.toLocaleString('en-IN') }}\n✅ Payment Mila: ₹{{ $json.todayPayment.toLocaleString('en-IN') }}\n📝 Transactions: {{ $json.todayTransactions }}\n\n{{ $json.creditEmoji }} Net Change: ₹{{ Math.abs($json.creditChange).toLocaleString('en-IN') }} {{ $json.creditChange > 0 ? '(Badhha)' : '(Ghata)' }}\n\n━━━━━━━━━━━━━━━━\n*Total Udhaar Baaki:*\n💵 ₹{{ $json.totalReceivables.toLocaleString('en-IN') }}\n👥 {{ $json.customersWithBalance }} customers\n\n━━━━━━━━━━━━━━━━\n_ShopSmart Pro se report_ 💜"
+      },
+      "id": "send-whatsapp-report",
+      "name": "Send WhatsApp Report",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [1250, 200],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2",
+          "name": "WhatsApp Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "reports@shopsmart.pro",
+        "toEmail": "={{ $json.userEmail }}",
+        "subject": "=📊 Daily Report - {{ $json.shopName }} | {{ $now.format('dd MMM yyyy') }}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; background: #f3f4f6; padding: 20px; }\n    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; }\n    .header { background: linear-gradient(135deg, #7C3AED, #6D28D9); color: white; padding: 30px; text-align: center; }\n    .content { padding: 30px; }\n    .stat-card { background: #f9fafb; border-radius: 8px; padding: 20px; margin: 10px 0; display: flex; justify-content: space-between; }\n    .stat-label { color: #6b7280; font-size: 14px; }\n    .stat-value { font-size: 24px; font-weight: bold; color: #1f2937; }\n    .stat-value.credit { color: #ef4444; }\n    .stat-value.payment { color: #10b981; }\n    .total-box { background: #7C3AED; color: white; border-radius: 8px; padding: 20px; text-align: center; margin-top: 20px; }\n    .footer { text-align: center; padding: 20px; color: #9ca3af; font-size: 12px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>📊 Daily Business Report</h1>\n      <p>{{ $json.shopName }}</p>\n      <p>{{ $json.reportDate }}</p>\n    </div>\n    \n    <div class=\"content\">\n      <h2>Today's Activity</h2>\n      \n      <div class=\"stat-card\">\n        <div>\n          <div class=\"stat-label\">Credit Given</div>\n          <div class=\"stat-value credit\">₹{{ $json.todayCredit.toLocaleString('en-IN') }}</div>\n        </div>\n        <div style=\"font-size: 40px;\">💳</div>\n      </div>\n      \n      <div class=\"stat-card\">\n        <div>\n          <div class=\"stat-label\">Payments Received</div>\n          <div class=\"stat-value payment\">₹{{ $json.todayPayment.toLocaleString('en-IN') }}</div>\n        </div>\n        <div style=\"font-size: 40px;\">✅</div>\n      </div>\n      \n      <div class=\"stat-card\">\n        <div>\n          <div class=\"stat-label\">Total Transactions</div>\n          <div class=\"stat-value\">{{ $json.todayTransactions }}</div>\n        </div>\n        <div style=\"font-size: 40px;\">📝</div>\n      </div>\n      \n      <div class=\"total-box\">\n        <div style=\"font-size: 14px; opacity: 0.9;\">Total Receivables</div>\n        <div style=\"font-size: 36px; font-weight: bold;\">₹{{ $json.totalReceivables.toLocaleString('en-IN') }}</div>\n        <div style=\"font-size: 14px; margin-top: 5px;\">from {{ $json.customersWithBalance }} customers</div>\n      </div>\n    </div>\n    \n    <div class=\"footer\">\n      <p>Generated by ShopSmart Pro 💜</p>\n      <p>Questions? Reply to this email or WhatsApp us!</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-email-report",
+      "name": "Send Email Report",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [1250, 350],
+      "credentials": {
+        "sendGridApi": {
+          "id": "4",
+          "name": "SendGrid API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SHOPSMART_API_URL}}/api/n8n/log-report",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"userId\": \"{{ $json.userId }}\",\n  \"reportType\": \"daily\",\n  \"sentAt\": \"{{ $now.toISO() }}\",\n  \"channels\": [\"whatsapp\", \"email\"]\n}",
+        "options": {}
+      },
+      "id": "log-report",
+      "name": "Log Report Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1450, 275],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "ShopSmart API Key"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "no-activity-skip",
+      "name": "Skip - No Activity",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    }
+  ],
+  "connections": {
+    "Daily 7 PM Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Daily Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Daily Stats": {
+      "main": [
+        [
+          {
+            "node": "Split by User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split by User": {
+      "main": [
+        [
+          {
+            "node": "Had Activity Today?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Had Activity Today?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip - No Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Report Data": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Report",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Report": {
+      "main": [
+        [
+          {
+            "node": "Log Report Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Report": {
+      "main": [
+        [
+          {
+            "node": "Log Report Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "reports",
+      "id": "4"
+    }
+  ]
+}

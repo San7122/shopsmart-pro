@@ -1,0 +1,49 @@
+QUICK START GUIDE - ShopSmart Pro
+
+🎯 GOAL: Deploy web + mobile app for free without sleeping
+
+✅ STEP 1: DEPLOY WEB APP (FREE - NO LOCAL SETUP NEEDED!)
+1. Go to https://render.com
+2. Sign up with GitHub
+3. Create Web Service
+4. Connect to your ShopSmart Pro repository
+5. Use these commands:
+   - Build: npm run install:all && cd server && npm install
+   - Start: cd server && npm start
+6. Add environment variables (NO LOCAL MONGODB OR RAZORPAY NEEDED!):
+   - MongoDB: Use MongoDB Atlas (cloud database - free tier)
+   - Razorpay: Sign up at razorpay.com for payment keys
+   - All services run in the cloud, not on your laptop!
+7. Deploy! Note your web URL.
+
+✅ STEP 2: UPDATE MOBILE CONFIG
+1. Open: mobile/src/services/api.js
+2. Change production URL to your deployed web URL:
+   ': 'https://YOUR-RENDER-URL.onrender.com/api'
+3. Save and commit changes.
+
+✅ STEP 3: BUILD MOBILE APP (FREE)
+1. Go to mobile/ directory
+2. Run: npm install
+3. Install: npm install -g @expo/cli
+4. Build: eas build --platform all
+5. Get QR code to share with users
+
+✅ STEP 4: SHARE APPS
+- Web: Share your Render URL
+- Mobile: Users scan QR code with "Expo Go" app
+- No Apple/Google fees needed!
+
+💡 TIPS:
+- Use Render.com free tier (no sleep for small usage)
+- Expo allows free distribution to iOS + Android
+- Mobile users need "Expo Go" app to run your app
+- Everything works without paying developer fees!
+
+🔗 USEFUL LINKS:
+- Render.com: https://render.com
+- Expo.dev: https://expo.dev
+- Your mobile app: /mobile directory
+- Your web app: /server directory
+
+🎉 YOU'RE READY! Deploy in 30 minutes or less!

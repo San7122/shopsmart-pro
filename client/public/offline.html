@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - ShopSmart Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      color: #1f2937;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    
+    .hindi {
+      color: #6b7280;
+      font-size: 18px;
+      margin-bottom: 24px;
+    }
+    
+    p {
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    
+    .btn {
+      display: inline-block;
+      background: #7C3AED;
+      color: white;
+      padding: 14px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .tips {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      text-align: left;
+    }
+    
+    .tips h3 {
+      font-size: 14px;
+      color: #374151;
+      margin-bottom: 12px;
+    }
+    
+    .tips ul {
+      list-style: none;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    
+    .tips li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .tips li:last-child {
+      border-bottom: none;
+    }
+    
+    .tips li::before {
+      content: '✓';
+      color: #10b981;
+      margin-right: 8px;
+    }
+    
+    .logo {
+      margin-top: 24px;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+    
+    .logo span {
+      color: #7C3AED;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📶</div>
+    <h1>You're Offline</h1>
+    <div class="hindi">आप ऑफलाइन हैं</div>
+    
+    <p>
+      Don't worry! Your data is safe. Please check your internet connection and try again.
+    </p>
+    
+    <button class="btn" onclick="window.location.reload()">
+      🔄 Try Again
+    </button>
+    
+    <div class="tips">
+      <h3>💡 Offline Mode Tips:</h3>
+      <ul>
+        <li>Your recent data is cached locally</li>
+        <li>New entries will sync when online</li>
+        <li>Check WiFi or mobile data</li>
+        <li>Move to an area with better signal</li>
+      </ul>
+    </div>
+    
+    <div class="logo">
+      🛒 <span>ShopSmart Pro</span>
+    </div>
+  </div>
+  
+  <script>
+    // Auto retry when online
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+    
+    // Register for push if available
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        console.log('SW ready for offline page');
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+{
+  "name": "ShopSmart - Low Stock Alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "every-4-hours",
+      "name": "Every 4 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SHOPSMART_API_URL}}/api/inventory/low-stock",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-low-stock",
+      "name": "Fetch Low Stock Items",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "ShopSmart API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-alerts",
+              "leftValue": "={{ $json.alerts.length }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "has-alerts",
+      "name": "Has Low Stock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "alerts",
+        "options": {}
+      },
+      "id": "split-alerts",
+      "name": "Split Alerts",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group products by user for batch notification\nconst alert = $input.item.json;\n\nconst notification = {\n  userId: alert.userId,\n  userName: alert.userName,\n  userPhone: alert.userPhone,\n  shopName: alert.shopName,\n  \n  productName: alert.productName,\n  currentStock: alert.currentStock,\n  minStock: alert.minStock,\n  unit: alert.unit,\n  \n  // Alert severity\n  isOutOfStock: alert.currentStock === 0,\n  urgency: alert.currentStock === 0 ? '🔴 OUT OF STOCK' : '🟡 LOW STOCK',\n  \n  // WhatsApp message\n  message: alert.currentStock === 0 \n    ? `🔴 *STOCK KHATAM!*\\n\\n📦 ${alert.productName}\\n⚠️ Stock: 0 ${alert.unit}\\n\\nJaldi order karo!`\n    : `🟡 *LOW STOCK ALERT*\\n\\n📦 ${alert.productName}\\n📊 Current: ${alert.currentStock} ${alert.unit}\\n⚠️ Minimum: ${alert.minStock} ${alert.unit}\\n\\nRestock soon!`\n};\n\nreturn { json: notification };"
+      },
+      "id": "prepare-notification",
+      "name": "Prepare Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-critical",
+              "leftValue": "={{ $json.isOutOfStock }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-critical",
+      "name": "Is Out of Stock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "={{$env.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "=+91{{ $json.userPhone }}",
+        "messageType": "text",
+        "textBody": "={{ $json.message }}"
+      },
+      "id": "send-critical-alert",
+      "name": "Send Critical Alert",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [1450, 100],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2",
+          "name": "WhatsApp Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "={{$env.TWILIO_PHONE_NUMBER}}",
+        "to": "=+91{{ $json.userPhone }}",
+        "message": "=URGENT: {{ $json.productName }} out of stock at {{ $json.shopName }}! - ShopSmart Pro"
+      },
+      "id": "send-sms-alert",
+      "name": "Send SMS Alert",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [1650, 100],
+      "credentials": {
+        "twilioApi": {
+          "id": "3",
+          "name": "Twilio Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "id": "batch-low-stock",
+      "name": "Batch Low Stock",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate low stock items for single notification\nconst items = $input.all();\n\nif (items.length === 0) {\n  return [];\n}\n\n// Group by user\nconst byUser = {};\nitems.forEach(item => {\n  const userId = item.json.userId;\n  if (!byUser[userId]) {\n    byUser[userId] = {\n      userId: item.json.userId,\n      userName: item.json.userName,\n      userPhone: item.json.userPhone,\n      shopName: item.json.shopName,\n      products: []\n    };\n  }\n  byUser[userId].products.push({\n    name: item.json.productName,\n    stock: item.json.currentStock,\n    unit: item.json.unit\n  });\n});\n\n// Create messages\nreturn Object.values(byUser).map(user => {\n  const productList = user.products\n    .map(p => `• ${p.name}: ${p.stock} ${p.unit}`)\n    .join('\\n');\n  \n  return {\n    json: {\n      ...user,\n      message: `🟡 *Low Stock Summary*\\n${user.shopName}\\n\\n${productList}\\n\\n📦 ${user.products.length} items need restock`\n    }\n  };\n});"
+      },
+      "id": "aggregate-low-stock",
+      "name": "Aggregate by User",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "={{$env.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "=+91{{ $json.userPhone }}",
+        "messageType": "text",
+        "textBody": "={{ $json.message }}"
+      },
+      "id": "send-low-stock-summary",
+      "name": "Send Summary",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [1850, 300],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2",
+          "name": "WhatsApp Business API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "no-alerts",
+      "name": "No Alerts",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [850, 400]
+    }
+  ],
+  "connections": {
+    "Every 4 Hours": {
+      "main": [
+        [
+          {
+            "node": "Fetch Low Stock Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Low Stock Items": {
+      "main": [
+        [
+          {
+            "node": "Has Low Stock?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Low Stock?": {
+      "main": [
+        [
+          {
+            "node": "Split Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Alerts": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Notification": {
+      "main": [
+        [
+          {
+            "node": "Is Out of Stock?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Out of Stock?": {
+      "main": [
+        [
+          {
+            "node": "Send Critical Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Batch Low Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Critical Alert": {
+      "main": [
+        [
+          {
+            "node": "Send SMS Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Low Stock": {
+      "main": [
+        [
+          {
+            "node": "Aggregate by User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate by User": {
+      "main": [
+        [
+          {
+            "node": "Send Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "inventory",
+      "id": "7"
+    },
+    {
+      "name": "alerts",
+      "id": "8"
+    }
+  ]
+}

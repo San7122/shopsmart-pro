@@ -1,0 +1,385 @@
+{
+  "name": "ShopSmart - Customer Onboarding Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-registration",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "New Registration Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "shopsmart-new-registration"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "userName",
+              "value": "={{ $json.body.name }}"
+            },
+            {
+              "name": "userPhone",
+              "value": "={{ $json.body.phone }}"
+            },
+            {
+              "name": "userEmail",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "name": "shopName",
+              "value": "={{ $json.body.shopName }}"
+            },
+            {
+              "name": "userId",
+              "value": "={{ $json.body.userId }}"
+            },
+            {
+              "name": "registeredAt",
+              "value": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-data",
+      "name": "Extract User Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "={{$env.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "=+91{{ $json.userPhone }}",
+        "messageType": "template",
+        "templateName": "welcome_message",
+        "templateLanguage": "hi",
+        "templateComponents": {
+          "component": [
+            {
+              "type": "body",
+              "parameters": [
+                {
+                  "type": "text",
+                  "text": "={{ $json.userName }}"
+                },
+                {
+                  "type": "text",
+                  "text": "={{ $json.shopName }}"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "id": "send-welcome-whatsapp",
+      "name": "Send Welcome WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [650, 200],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2",
+          "name": "WhatsApp Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "welcome@shopsmart.pro",
+        "toEmail": "={{ $json.userEmail }}",
+        "subject": "🎉 Welcome to ShopSmart Pro, {{ $json.userName }}!",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; padding: 20px; }\n    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; }\n    .header { text-align: center; margin-bottom: 30px; }\n    .logo { font-size: 32px; color: #7C3AED; font-weight: bold; }\n    h1 { color: #1f2937; font-size: 24px; }\n    .cta-button { display: inline-block; background: #7C3AED; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; }\n    .feature { display: flex; align-items: center; margin: 15px 0; }\n    .feature-icon { font-size: 24px; margin-right: 15px; }\n    .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"logo\">🛒 ShopSmart Pro</div>\n    </div>\n    \n    <h1>Namaste {{ $json.userName }} ji! 🙏</h1>\n    \n    <p>Aapka <strong>{{ $json.shopName }}</strong> ab digital ho gaya!</p>\n    \n    <p>ShopSmart Pro ke saath aap kar sakte ho:</p>\n    \n    <div class=\"feature\">\n      <span class=\"feature-icon\">📱</span>\n      <span>Udhaar track karo easily</span>\n    </div>\n    \n    <div class=\"feature\">\n      <span class=\"feature-icon\">💬</span>\n      <span>WhatsApp pe reminder bhejo</span>\n    </div>\n    \n    <div class=\"feature\">\n      <span class=\"feature-icon\">📊</span>\n      <span>Business reports dekho</span>\n    </div>\n    \n    <div class=\"feature\">\n      <span class=\"feature-icon\">🧾</span>\n      <span>Professional invoices banao</span>\n    </div>\n    \n    <div style=\"text-align: center; margin: 30px 0;\">\n      <a href=\"https://app.shopsmart.pro\" class=\"cta-button\">Start Using ShopSmart →</a>\n    </div>\n    \n    <p>Koi bhi problem ho toh WhatsApp karo: <strong>+91 98765 43210</strong></p>\n    \n    <div class=\"footer\">\n      <p>Made with 💜 in India</p>\n      <p>© 2024 ShopSmart Pro</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-welcome-email",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [650, 400],
+      "credentials": {
+        "sendGridApi": {
+          "id": "4",
+          "name": "SendGrid API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubspot.com/crm/v3/objects/contacts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"properties\": {\n    \"firstname\": \"{{ $json.userName }}\",\n    \"phone\": \"+91{{ $json.userPhone }}\",\n    \"email\": \"{{ $json.userEmail }}\",\n    \"company\": \"{{ $json.shopName }}\",\n    \"lifecyclestage\": \"customer\",\n    \"hs_lead_status\": \"NEW\",\n    \"shopsmart_user_id\": \"{{ $json.userId }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "create-hubspot-contact",
+      "name": "Create HubSpot Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5",
+          "name": "HubSpot API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "days"
+      },
+      "id": "wait-1-day",
+      "name": "Wait 1 Day",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SHOPSMART_API_URL}}/api/users/{{ $json.userId }}/activity",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "check-activity",
+      "name": "Check User Activity",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1250, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "ShopSmart API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-customers",
+              "leftValue": "={{ $json.customersAdded }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-active",
+      "name": "Is Active?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "={{$env.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "=+91{{ $json.userPhone }}",
+        "messageType": "template",
+        "templateName": "tutorial_reminder",
+        "templateLanguage": "hi",
+        "templateComponents": {
+          "component": [
+            {
+              "type": "body",
+              "parameters": [
+                {
+                  "type": "text",
+                  "text": "={{ $json.userName }}"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "id": "send-tutorial",
+      "name": "Send Tutorial Video",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [1650, 400],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2",
+          "name": "WhatsApp Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "={{$env.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "=+91{{ $json.userPhone }}",
+        "messageType": "template",
+        "templateName": "congrats_first_customer",
+        "templateLanguage": "hi"
+      },
+      "id": "send-congrats",
+      "name": "Send Congrats",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [1650, 200],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2",
+          "name": "WhatsApp Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Onboarding flow initiated\",\n  \"userId\": \"{{ $('Extract User Data').item.json.userId }}\"\n}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 500]
+    }
+  ],
+  "connections": {
+    "New Registration Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract User Data": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Create HubSpot Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Create HubSpot Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create HubSpot Contact": {
+      "main": [
+        [
+          {
+            "node": "Wait 1 Day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1 Day": {
+      "main": [
+        [
+          {
+            "node": "Check User Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check User Activity": {
+      "main": [
+        [
+          {
+            "node": "Is Active?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Active?": {
+      "main": [
+        [
+          {
+            "node": "Send Congrats",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Tutorial Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "onboarding",
+      "id": "3"
+    }
+  ]
+}

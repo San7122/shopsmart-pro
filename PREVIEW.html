@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopSmart Pro - Visual Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .phone-frame {
+      width: 375px;
+      height: 700px;
+      border-radius: 40px;
+      border: 12px solid #1f2937;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .nav-btn.active { background: #7C3AED; color: white; }
+    .gradient-bg { background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  
+  <!-- Header -->
+  <div class="gradient-bg text-white py-6 px-4 text-center">
+    <h1 class="text-3xl font-bold">🛒 ShopSmart Pro</h1>
+    <p class="text-purple-200 mt-2">Visual Preview - Click buttons to see different screens</p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="sticky top-0 bg-white shadow-md z-50 py-4">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex flex-wrap gap-2 justify-center">
+        <button onclick="showScreen('login')" class="nav-btn active px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">🔐 Login</button>
+        <button onclick="showScreen('dashboard')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">📊 Dashboard</button>
+        <button onclick="showScreen('customers')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">👥 Customers</button>
+        <button onclick="showScreen('customer-detail')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">👤 Customer Detail</button>
+        <button onclick="showScreen('add-transaction')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">💰 Add Entry</button>
+        <button onclick="showScreen('products')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">📦 Products</button>
+        <button onclick="showScreen('invoice')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">🧾 Invoice</button>
+        <button onclick="showScreen('reports')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">📈 Reports</button>
+        <button onclick="showScreen('storefront')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">🏪 Store</button>
+        <button onclick="showScreen('reminders')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-purple-600 hover:text-white transition">📱 Reminders</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8 items-start justify-center">
+      
+      <!-- Phone Preview -->
+      <div class="phone-frame bg-gray-50 flex-shrink-0">
+        
+        <!-- LOGIN SCREEN -->
+        <div id="login" class="screen active h-full">
+          <div class="gradient-bg h-full flex flex-col">
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-white">
+              <div class="text-6xl mb-4">🛒</div>
+              <h1 class="text-2xl font-bold">ShopSmart Pro</h1>
+              <p class="text-purple-200 text-sm mt-1">Digital Udhaar Khata</p>
+              
+              <div class="w-full mt-8 space-y-4">
+                <div>
+                  <label class="text-sm text-purple-200">Mobile Number</label>
+                  <input type="text" value="9876543210" class="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200" />
+                </div>
+                <div>
+                  <label class="text-sm text-purple-200">Password</label>
+                  <input type="password" value="••••••••" class="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white" />
+                </div>
+                <button class="w-full py-3 bg-white text-purple-600 font-semibold rounded-xl mt-4">
+                  Login →
+                </button>
+                <p class="text-center text-purple-200 text-sm">
+                  New here? <span class="text-white font-medium">Register</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DASHBOARD SCREEN -->
+        <div id="dashboard" class="screen h-full overflow-y-auto">
+          <div class="gradient-bg text-white p-4 pb-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-purple-200 text-sm">Good Morning 👋</p>
+                <h1 class="text-xl font-bold">Sharma General Store</h1>
+              </div>
+              <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <span>🔔</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 -mt-4">
+            <!-- Stats Cards -->
+            <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="text-center p-3 bg-red-50 rounded-xl">
+                  <p class="text-2xl font-bold text-red-600">₹45,230</p>
+                  <p class="text-xs text-gray-500">Total Udhaar</p>
+                </div>
+                <div class="text-center p-3 bg-green-50 rounded-xl">
+                  <p class="text-2xl font-bold text-green-600">₹12,500</p>
+                  <p class="text-xs text-gray-500">Today's Collection</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-2 mt-4">
+                <div class="text-center p-2 bg-purple-50 rounded-lg">
+                  <p class="text-lg font-bold text-purple-600">156</p>
+                  <p class="text-xs text-gray-500">Customers</p>
+                </div>
+                <div class="text-center p-2 bg-blue-50 rounded-lg">
+                  <p class="text-lg font-bold text-blue-600">42</p>
+                  <p class="text-xs text-gray-500">Due Today</p>
+                </div>
+                <div class="text-center p-2 bg-orange-50 rounded-lg">
+                  <p class="text-lg font-bold text-orange-600">8</p>
+                  <p class="text-xs text-gray-500">Overdue</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-4 gap-3 mb-4">
+              <div class="text-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <span class="text-xl">➕</span>
+                </div>
+                <p class="text-xs text-gray-600">Add Entry</p>
+              </div>
+              <div class="text-center">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <span class="text-xl">👤</span>
+                </div>
+                <p class="text-xs text-gray-600">Customer</p>
+              </div>
+              <div class="text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <span class="text-xl">📱</span>
+                </div>
+                <p class="text-xs text-gray-600">Remind</p>
+              </div>
+              <div class="text-center">
+                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <span class="text-xl">📊</span>
+                </div>
+                <p class="text-xs text-gray-600">Reports</p>
+              </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="bg-white rounded-2xl shadow p-4">
+              <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold">Recent Transactions</h3>
+                <span class="text-purple-600 text-sm">View All</span>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold">R</div>
+                    <div>
+                      <p class="font-medium text-sm">Rajesh Kumar</p>
+                      <p class="text-xs text-gray-500">2 min ago • Credit</p>
+                    </div>
+                  </div>
+                  <p class="font-bold text-red-600">+₹850</p>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">P</div>
+                    <div>
+                      <p class="font-medium text-sm">Priya Sharma</p>
+                      <p class="text-xs text-gray-500">1 hour ago • Payment</p>
+                    </div>
+                  </div>
+                  <p class="font-bold text-green-600">-₹500</p>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold">A</div>
+                    <div>
+                      <p class="font-medium text-sm">Amit Singh</p>
+                      <p class="text-xs text-gray-500">3 hours ago • Credit</p>
+                    </div>
+                  </div>
+                  <p class="font-bold text-red-600">+₹1,200</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Navigation -->
+          <div class="fixed bottom-0 left-0 right-0 bg-white border-t px-6 py-3 flex justify-around" style="max-width: 351px; margin: 0 auto;">
+            <div class="text-center text-purple-600">
+              <span class="text-xl">🏠</span>
+              <p class="text-xs">Home</p>
+            </div>
+            <div class="text-center text-gray-400">
+              <span class="text-xl">👥</span>
+              <p class="text-xs">Customers</p>
+            </div>
+            <div class="text-center">
+              <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center -mt-6 shadow-lg">
+                <span class="text-white text-2xl">+</span>
+              </div>
+            </div>
+            <div class="text-center text-gray-400">
+              <span class="text-xl">📦</span>
+              <p class="text-xs">Products</p>
+            </div>
+            <div class="text-center text-gray-400">
+              <span class="text-xl">⚙️</span>
+              <p class="text-xs">Settings</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CUSTOMERS SCREEN -->
+        <div id="customers" class="screen h-full overflow-y-auto bg-gray-50">
+          <div class="gradient-bg text-white p-4">
+            <div class="flex justify-between items-center">
+              <h1 class="text-xl font-bold">Customers</h1>
+              <button class="bg-white/20 px-3 py-1 rounded-full text-sm">+ Add</button>
+            </div>
+            <div class="mt-3 relative">
+              <input type="text" placeholder="Search customers..." class="w-full px-4 py-2 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 text-sm" />
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <div class="flex gap-2 mb-4 overflow-x-auto">
+              <button class="px-4 py-1 bg-purple-600 text-white rounded-full text-sm whitespace-nowrap">All (156)</button>
+              <button class="px-4 py-1 bg-white text-gray-600 rounded-full text-sm whitespace-nowrap">Due (42)</button>
+              <button class="px-4 py-1 bg-white text-gray-600 rounded-full text-sm whitespace-nowrap">Overdue (8)</button>
+            </div>
+
+            <div class="space-y-3">
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-lg">RK</div>
+                    <div>
+                      <p class="font-semibold">Rajesh Kumar</p>
+                      <p class="text-xs text-gray-500">📞 9876543210</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹2,450</p>
+                    <p class="text-xs text-gray-500">Due</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-lg">PS</div>
+                    <div>
+                      <p class="font-semibold">Priya Sharma</p>
+                      <p class="text-xs text-gray-500">📞 9988776655</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-green-600">₹0</p>
+                    <p class="text-xs text-gray-500">Clear</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold text-lg">AS</div>
+                    <div>
+                      <p class="font-semibold">Amit Singh</p>
+                      <p class="text-xs text-orange-600">⚠️ 15 days overdue</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹5,800</p>
+                    <p class="text-xs text-gray-500">Due</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg">MJ</div>
+                    <div>
+                      <p class="font-semibold">Meera Joshi</p>
+                      <p class="text-xs text-gray-500">📞 9123456789</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹1,200</p>
+                    <p class="text-xs text-gray-500">Due</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold text-lg">SG</div>
+                    <div>
+                      <p class="font-semibold">Sunita Gupta</p>
+                      <p class="text-xs text-gray-500">📞 9876512340</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹3,100</p>
+                    <p class="text-xs text-gray-500">Due</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CUSTOMER DETAIL SCREEN -->
+        <div id="customer-detail" class="screen h-full overflow-y-auto bg-gray-50">
+          <div class="gradient-bg text-white p-4">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="text-xl">←</span>
+              <h1 class="text-lg font-bold">Customer Details</h1>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">RK</div>
+              <div>
+                <h2 class="text-xl font-bold">Rajesh Kumar</h2>
+                <p class="text-purple-200">📞 9876543210</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 -mt-2">
+            <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
+              <div class="text-center">
+                <p class="text-gray-500 text-sm">Outstanding Balance</p>
+                <p class="text-4xl font-bold text-red-600 mt-1">₹2,450</p>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-4">
+                <button class="bg-red-500 text-white py-3 rounded-xl font-medium">+ Credit</button>
+                <button class="bg-green-500 text-white py-3 rounded-xl font-medium">💰 Payment</button>
+              </div>
+            </div>
+
+            <div class="flex gap-2 mb-4">
+              <button class="flex-1 bg-purple-100 text-purple-600 py-2 rounded-lg text-sm font-medium">📞 Call</button>
+              <button class="flex-1 bg-green-100 text-green-600 py-2 rounded-lg text-sm font-medium">💬 WhatsApp</button>
+              <button class="flex-1 bg-blue-100 text-blue-600 py-2 rounded-lg text-sm font-medium">📱 Remind</button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow p-4">
+              <h3 class="font-semibold mb-3">Transaction History</h3>
+              
+              <div class="space-y-3">
+                <div class="flex justify-between items-center p-3 bg-red-50 rounded-xl">
+                  <div>
+                    <p class="font-medium text-sm">Credit - Groceries</p>
+                    <p class="text-xs text-gray-500">Today, 10:30 AM</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">+₹850</p>
+                    <p class="text-xs text-gray-500">Bal: ₹2,450</p>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center p-3 bg-green-50 rounded-xl">
+                  <div>
+                    <p class="font-medium text-sm">Payment - UPI</p>
+                    <p class="text-xs text-gray-500">Yesterday, 6:00 PM</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-green-600">-₹500</p>
+                    <p class="text-xs text-gray-500">Bal: ₹1,600</p>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center p-3 bg-red-50 rounded-xl">
+                  <div>
+                    <p class="font-medium text-sm">Credit - Monthly Items</p>
+                    <p class="text-xs text-gray-500">Jan 12, 2024</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">+₹1,200</p>
+                    <p class="text-xs text-gray-500">Bal: ₹2,100</p>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center p-3 bg-green-50 rounded-xl">
+                  <div>
+                    <p class="font-medium text-sm">Payment - Cash</p>
+                    <p class="text-xs text-gray-500">Jan 10, 2024</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-green-600">-₹1,000</p>
+                    <p class="text-xs text-gray-500">Bal: ₹900</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD TRANSACTION SCREEN -->
+        <div id="add-transaction" class="screen h-full overflow-y-auto bg-gray-50">
+          <div class="gradient-bg text-white p-4">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">←</span>
+              <h1 class="text-lg font-bold">New Entry</h1>
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <!-- Customer Selection -->
+            <div class="bg-white rounded-xl p-4 mb-4 shadow-sm">
+              <label class="text-sm text-gray-500">Customer</label>
+              <div class="flex items-center gap-3 mt-2">
+                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">RK</div>
+                <div class="flex-1">
+                  <p class="font-medium">Rajesh Kumar</p>
+                  <p class="text-xs text-gray-500">Balance: ₹1,600</p>
+                </div>
+                <span class="text-gray-400">▼</span>
+              </div>
+            </div>
+
+            <!-- Transaction Type -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <button class="bg-red-500 text-white py-4 rounded-xl font-medium shadow-lg">
+                <span class="text-2xl block">📥</span>
+                Credit (Udhaar)
+              </button>
+              <button class="bg-white border-2 border-green-500 text-green-600 py-4 rounded-xl font-medium">
+                <span class="text-2xl block">💰</span>
+                Payment
+              </button>
+            </div>
+
+            <!-- Amount -->
+            <div class="bg-white rounded-xl p-4 mb-4 shadow-sm">
+              <label class="text-sm text-gray-500">Amount</label>
+              <div class="flex items-center mt-2">
+                <span class="text-3xl text-gray-400 mr-2">₹</span>
+                <input type="text" value="850" class="text-4xl font-bold w-full outline-none" />
+              </div>
+            </div>
+
+            <!-- Quick Amounts -->
+            <div class="grid grid-cols-4 gap-2 mb-4">
+              <button class="bg-gray-100 py-2 rounded-lg text-sm">₹100</button>
+              <button class="bg-gray-100 py-2 rounded-lg text-sm">₹500</button>
+              <button class="bg-gray-100 py-2 rounded-lg text-sm">₹1000</button>
+              <button class="bg-gray-100 py-2 rounded-lg text-sm">₹2000</button>
+            </div>
+
+            <!-- Description -->
+            <div class="bg-white rounded-xl p-4 mb-4 shadow-sm">
+              <label class="text-sm text-gray-500">Description (Optional)</label>
+              <input type="text" placeholder="e.g., Monthly groceries" class="w-full mt-2 text-gray-700 outline-none" value="Groceries - Rice, Dal, Oil" />
+            </div>
+
+            <!-- Items -->
+            <div class="bg-white rounded-xl p-4 mb-4 shadow-sm">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm text-gray-500">Add Items (Optional)</label>
+                <button class="text-purple-600 text-sm font-medium">+ Add</button>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                  <span>Rice (5kg)</span>
+                  <span>₹350</span>
+                </div>
+                <div class="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                  <span>Dal (2kg)</span>
+                  <span>₹280</span>
+                </div>
+                <div class="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                  <span>Oil (1L)</span>
+                  <span>₹220</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="w-full bg-purple-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg">
+              Save Entry ✓
+            </button>
+          </div>
+        </div>
+
+        <!-- PRODUCTS SCREEN -->
+        <div id="products" class="screen h-full overflow-y-auto bg-gray-50">
+          <div class="gradient-bg text-white p-4">
+            <div class="flex justify-between items-center">
+              <h1 class="text-xl font-bold">Products</h1>
+              <button class="bg-white/20 px-3 py-1 rounded-full text-sm">+ Add</button>
+            </div>
+            <div class="mt-3 relative">
+              <input type="text" placeholder="Search products..." class="w-full px-4 py-2 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 text-sm" />
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <div class="flex gap-2 mb-4 overflow-x-auto">
+              <button class="px-4 py-1 bg-purple-600 text-white rounded-full text-sm whitespace-nowrap">All</button>
+              <button class="px-4 py-1 bg-white text-gray-600 rounded-full text-sm whitespace-nowrap">Groceries</button>
+              <button class="px-4 py-1 bg-white text-gray-600 rounded-full text-sm whitespace-nowrap">Dairy</button>
+              <button class="px-4 py-1 bg-white text-gray-600 rounded-full text-sm whitespace-nowrap">Snacks</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white p-3 rounded-xl shadow-sm">
+                <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl mb-2">🍚</div>
+                <p class="font-medium text-sm">Basmati Rice</p>
+                <p class="text-xs text-gray-500">1kg pack</p>
+                <div class="flex justify-between items-center mt-2">
+                  <p class="font-bold text-purple-600">₹85</p>
+                  <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">In Stock</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded-xl shadow-sm">
+                <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl mb-2">🫒</div>
+                <p class="font-medium text-sm">Sunflower Oil</p>
+                <p class="text-xs text-gray-500">1L bottle</p>
+                <div class="flex justify-between items-center mt-2">
+                  <p class="font-bold text-purple-600">₹180</p>
+                  <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">In Stock</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded-xl shadow-sm border-2 border-orange-300">
+                <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl mb-2">🥛</div>
+                <p class="font-medium text-sm">Amul Butter</p>
+                <p class="text-xs text-gray-500">500g pack</p>
+                <div class="flex justify-between items-center mt-2">
+                  <p class="font-bold text-purple-600">₹280</p>
+                  <span class="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Low Stock</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded-xl shadow-sm">
+                <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl mb-2">🍪</div>
+                <p class="font-medium text-sm">Parle-G Biscuits</p>
+                <p class="text-xs text-gray-500">800g family pack</p>
+                <div class="flex justify-between items-center mt-2">
+                  <p class="font-bold text-purple-600">₹95</p>
+                  <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">In Stock</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded-xl shadow-sm">
+                <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl mb-2">🧂</div>
+                <p class="font-medium text-sm">Tata Salt</p>
+                <p class="text-xs text-gray-500">1kg pack</p>
+                <div class="flex justify-between items-center mt-2">
+                  <p class="font-bold text-purple-600">₹28</p>
+                  <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">In Stock</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded-xl shadow-sm border-2 border-red-300">
+                <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl mb-2">🍞</div>
+                <p class="font-medium text-sm">Britannia Bread</p>
+                <p class="text-xs text-gray-500">400g loaf</p>
+                <div class="flex justify-between items-center mt-2">
+                  <p class="font-bold text-purple-600">₹45</p>
+                  <span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Out of Stock</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INVOICE SCREEN -->
+        <div id="invoice" class="screen h-full overflow-y-auto bg-gray-50">
+          <div class="gradient-bg text-white p-4">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">←</span>
+              <h1 class="text-lg font-bold">Invoice #INV-2024-0156</h1>
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <div class="bg-white rounded-2xl shadow-lg p-4">
+              <!-- Invoice Header -->
+              <div class="text-center border-b pb-4 mb-4">
+                <h2 class="text-xl font-bold text-purple-600">Sharma General Store</h2>
+                <p class="text-sm text-gray-500">123 Market Road, Delhi</p>
+                <p class="text-sm text-gray-500">📞 9876543210</p>
+              </div>
+
+              <!-- Customer Info -->
+              <div class="flex justify-between mb-4 text-sm">
+                <div>
+                  <p class="text-gray-500">Bill To:</p>
+                  <p class="font-medium">Rajesh Kumar</p>
+                  <p class="text-gray-500">9876543210</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-gray-500">Date:</p>
+                  <p class="font-medium">15 Jan 2024</p>
+                  <p class="text-gray-500">11:30 AM</p>
+                </div>
+              </div>
+
+              <!-- Items -->
+              <div class="border-t border-b py-3 mb-3">
+                <div class="flex justify-between text-xs text-gray-500 mb-2">
+                  <span class="w-1/2">Item</span>
+                  <span class="w-1/6 text-center">Qty</span>
+                  <span class="w-1/6 text-right">Price</span>
+                  <span class="w-1/6 text-right">Total</span>
+                </div>
+                
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="w-1/2">Basmati Rice 5kg</span>
+                    <span class="w-1/6 text-center">1</span>
+                    <span class="w-1/6 text-right">₹350</span>
+                    <span class="w-1/6 text-right">₹350</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="w-1/2">Toor Dal 2kg</span>
+                    <span class="w-1/6 text-center">1</span>
+                    <span class="w-1/6 text-right">₹280</span>
+                    <span class="w-1/6 text-right">₹280</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="w-1/2">Sunflower Oil 1L</span>
+                    <span class="w-1/6 text-center">1</span>
+                    <span class="w-1/6 text-right">₹180</span>
+                    <span class="w-1/6 text-right">₹180</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="w-1/2">Sugar 1kg</span>
+                    <span class="w-1/6 text-center">1</span>
+                    <span class="w-1/6 text-right">₹45</span>
+                    <span class="w-1/6 text-right">₹45</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Totals -->
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Subtotal</span>
+                  <span>₹855</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Discount (5%)</span>
+                  <span class="text-green-600">-₹43</span>
+                </div>
+                <div class="flex justify-between text-lg font-bold border-t pt-2">
+                  <span>Total</span>
+                  <span class="text-purple-600">₹812</span>
+                </div>
+              </div>
+
+              <!-- Payment Status -->
+              <div class="mt-4 p-3 bg-orange-50 rounded-xl text-center">
+                <span class="text-orange-600 font-medium">💳 Added to Udhaar</span>
+              </div>
+
+              <!-- Actions -->
+              <div class="grid grid-cols-2 gap-3 mt-4">
+                <button class="flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-xl">
+                  <span>📱</span> WhatsApp
+                </button>
+                <button class="flex items-center justify-center gap-2 bg-blue-500 text-white py-3 rounded-xl">
+                  <span>🖨️</span> Print
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPORTS SCREEN -->
+        <div id="reports" class="screen h-full overflow-y-auto bg-gray-50">
+          <div class="gradient-bg text-white p-4">
+            <h1 class="text-xl font-bold">Reports & Analytics</h1>
+            <div class="flex gap-2 mt-3">
+              <button class="px-3 py-1 bg-white text-purple-600 rounded-full text-sm">Today</button>
+              <button class="px-3 py-1 bg-white/20 rounded-full text-sm">Week</button>
+              <button class="px-3 py-1 bg-white/20 rounded-full text-sm">Month</button>
+              <button class="px-3 py-1 bg-white/20 rounded-full text-sm">Year</button>
+            </div>
+          </div>
+          
+          <div class="p-4">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <p class="text-gray-500 text-xs">Total Sales</p>
+                <p class="text-2xl font-bold text-green-600">₹15,420</p>
+                <p class="text-xs text-green-500">↑ 12% vs yesterday</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <p class="text-gray-500 text-xs">Collections</p>
+                <p class="text-2xl font-bold text-blue-600">₹8,500</p>
+                <p class="text-xs text-blue-500">↑ 8% vs yesterday</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <p class="text-gray-500 text-xs">New Credit</p>
+                <p class="text-2xl font-bold text-red-600">₹6,920</p>
+                <p class="text-xs text-red-500">↓ 5% vs yesterday</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <p class="text-gray-500 text-xs">Total Outstanding</p>
+                <p class="text-2xl font-bold text-orange-600">₹45,230</p>
+                <p class="text-xs text-gray-500">From 42 customers</p>
+              </div>
+            </div>
+
+            <!-- Chart Placeholder -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
+              <h3 class="font-semibold mb-3">Weekly Trend</h3>
+              <div class="h-32 flex items-end justify-around gap-2">
+                <div class="w-8 bg-purple-200 rounded-t" style="height: 40%"></div>
+                <div class="w-8 bg-purple-300 rounded-t" style="height: 60%"></div>
+                <div class="w-8 bg-purple-400 rounded-t" style="height: 45%"></div>
+                <div class="w-8 bg-purple-500 rounded-t" style="height: 80%"></div>
+                <div class="w-8 bg-purple-600 rounded-t" style="height: 65%"></div>
+                <div class="w-8 bg-purple-500 rounded-t" style="height: 90%"></div>
+                <div class="w-8 bg-purple-600 rounded-t" style="height: 100%"></div>
+              </div>
+              <div class="flex justify-around mt-2 text-xs text-gray-500">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+            </div>
+
+            <!-- Top Customers -->
+            <div class="bg-white rounded-xl shadow-sm p-4">
+              <h3 class="font-semibold mb-3">Top Customers (by dues)</h3>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg">🥇</span>
+                    <span class="text-sm">Amit Singh</span>
+                  </div>
+                  <span class="font-bold text-red-600">₹5,800</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg">🥈</span>
+                    <span class="text-sm">Sunita Gupta</span>
+                  </div>
+                  <span class="font-bold text-red-600">₹3,100</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg">🥉</span>
+                    <span class="text-sm">Rajesh Kumar</span>
+                  </div>
+                  <span class="font-bold text-red-600">₹2,450</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STOREFRONT SCREEN -->
+        <div id="storefront" class="screen h-full overflow-y-auto bg-white">
+          <div class="relative">
+            <div class="h-32 gradient-bg"></div>
+            <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
+              <div class="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center text-3xl">
+                🛒
+              </div>
+            </div>
+          </div>
+          
+          <div class="pt-12 px-4 text-center">
+            <h1 class="text-xl font-bold">Sharma General Store</h1>
+            <p class="text-gray-500 text-sm">Kirana & Daily Needs</p>
+            <div class="flex justify-center gap-4 mt-2 text-sm text-gray-500">
+              <span>📍 Delhi</span>
+              <span>⭐ 4.8</span>
+              <span>🕐 8AM-10PM</span>
+            </div>
+            
+            <div class="flex gap-2 justify-center mt-4">
+              <button class="px-4 py-2 bg-green-500 text-white rounded-full text-sm">💬 WhatsApp</button>
+              <button class="px-4 py-2 bg-purple-600 text-white rounded-full text-sm">📞 Call</button>
+            </div>
+          </div>
+
+          <div class="p-4 mt-4">
+            <h3 class="font-semibold mb-3">Featured Products</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-gray-50 p-3 rounded-xl">
+                <div class="text-3xl text-center mb-2">🍚</div>
+                <p class="font-medium text-sm text-center">Basmati Rice</p>
+                <p class="text-purple-600 font-bold text-center">₹85/kg</p>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-xl">
+                <div class="text-3xl text-center mb-2">🫒</div>
+                <p class="font-medium text-sm text-center">Cooking Oil</p>
+                <p class="text-purple-600 font-bold text-center">₹180/L</p>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-xl">
+                <div class="text-3xl text-center mb-2">🥛</div>
+                <p class="font-medium text-sm text-center">Fresh Milk</p>
+                <p class="text-purple-600 font-bold text-center">₹60/L</p>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-xl">
+                <div class="text-3xl text-center mb-2">🍞</div>
+                <p class="font-medium text-sm text-center">Bread</p>
+                <p class="text-purple-600 font-bold text-center">₹45</p>
+              </div>
+            </div>
+
+            <div class="mt-4 p-4 bg-purple-50 rounded-xl text-center">
+              <p class="text-purple-600 font-medium">🎁 This Week's Offer</p>
+              <p class="text-sm text-gray-600 mt-1">Buy groceries worth ₹500 & get 5% off!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- REMINDERS SCREEN -->
+        <div id="reminders" class="screen h-full overflow-y-auto bg-gray-50">
+          <div class="gradient-bg text-white p-4">
+            <h1 class="text-xl font-bold">Payment Reminders</h1>
+            <p class="text-purple-200 text-sm mt-1">Send WhatsApp/SMS reminders</p>
+          </div>
+          
+          <div class="p-4">
+            <!-- Reminder Stats -->
+            <div class="grid grid-cols-3 gap-2 mb-4">
+              <div class="bg-white p-3 rounded-xl text-center">
+                <p class="text-2xl font-bold text-orange-600">42</p>
+                <p class="text-xs text-gray-500">Pending</p>
+              </div>
+              <div class="bg-white p-3 rounded-xl text-center">
+                <p class="text-2xl font-bold text-red-600">8</p>
+                <p class="text-xs text-gray-500">Overdue</p>
+              </div>
+              <div class="bg-white p-3 rounded-xl text-center">
+                <p class="text-2xl font-bold text-green-600">15</p>
+                <p class="text-xs text-gray-500">Sent Today</p>
+              </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bg-white rounded-xl p-4 mb-4 shadow-sm">
+              <h3 class="font-semibold mb-3">Quick Actions</h3>
+              <div class="space-y-2">
+                <button class="w-full py-3 bg-green-500 text-white rounded-xl flex items-center justify-center gap-2">
+                  <span>💬</span> Send to All Overdue (8)
+                </button>
+                <button class="w-full py-3 bg-blue-500 text-white rounded-xl flex items-center justify-center gap-2">
+                  <span>📱</span> Send to All Pending (42)
+                </button>
+              </div>
+            </div>
+
+            <!-- Customer List -->
+            <div class="bg-white rounded-xl shadow-sm">
+              <div class="p-4 border-b">
+                <h3 class="font-semibold">Select Customers</h3>
+              </div>
+              
+              <div class="divide-y">
+                <div class="p-4 flex items-center gap-3">
+                  <input type="checkbox" checked class="w-5 h-5 text-purple-600 rounded" />
+                  <div class="flex-1">
+                    <p class="font-medium">Amit Singh</p>
+                    <p class="text-xs text-red-500">15 days overdue</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹5,800</p>
+                    <button class="text-green-500 text-xs">💬 Send</button>
+                  </div>
+                </div>
+
+                <div class="p-4 flex items-center gap-3">
+                  <input type="checkbox" checked class="w-5 h-5 text-purple-600 rounded" />
+                  <div class="flex-1">
+                    <p class="font-medium">Sunita Gupta</p>
+                    <p class="text-xs text-orange-500">7 days overdue</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹3,100</p>
+                    <button class="text-green-500 text-xs">💬 Send</button>
+                  </div>
+                </div>
+
+                <div class="p-4 flex items-center gap-3">
+                  <input type="checkbox" class="w-5 h-5 text-purple-600 rounded" />
+                  <div class="flex-1">
+                    <p class="font-medium">Rajesh Kumar</p>
+                    <p class="text-xs text-gray-500">Due in 3 days</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹2,450</p>
+                    <button class="text-green-500 text-xs">💬 Send</button>
+                  </div>
+                </div>
+
+                <div class="p-4 flex items-center gap-3">
+                  <input type="checkbox" class="w-5 h-5 text-purple-600 rounded" />
+                  <div class="flex-1">
+                    <p class="font-medium">Meera Joshi</p>
+                    <p class="text-xs text-gray-500">Due in 5 days</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-red-600">₹1,200</p>
+                    <button class="text-green-500 text-xs">💬 Send</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message Preview -->
+            <div class="mt-4 bg-green-50 rounded-xl p-4">
+              <h3 class="font-semibold text-green-800 mb-2">📱 Message Preview</h3>
+              <div class="bg-white p-3 rounded-lg text-sm text-gray-700">
+                <p>नमस्ते Amit जी! 🙏</p>
+                <p class="mt-2">आपके Sharma General Store में ₹5,800 का बकाया है।</p>
+                <p class="mt-2">कृपया जल्द भुगतान करें। धन्यवाद! 😊</p>
+                <p class="mt-2 text-purple-600">💳 Pay Now: upi://pay?pa=store@upi</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Feature Description -->
+      <div class="flex-1 max-w-md">
+        <div id="feature-description" class="bg-white rounded-2xl shadow-lg p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">🔐 Login / Register</h2>
+          <ul class="space-y-3 text-gray-600">
+            <li class="flex items-start gap-2">
+              <span class="text-green-500">✓</span>
+              <span>Simple mobile number + password login</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-500">✓</span>
+              <span>OTP verification for security</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-500">✓</span>
+              <span>Quick registration in 2 minutes</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-500">✓</span>
+              <span>Hindi + English support</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- All Features -->
+        <div class="mt-6 bg-purple-50 rounded-2xl p-6">
+          <h3 class="font-bold text-purple-800 mb-4">✨ All Features Included</h3>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="flex items-center gap-2">
+              <span>✅</span> Udhaar Tracking
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> Customer Management
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> Product Inventory
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> Invoice Generation
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> WhatsApp Reminders
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> Payment Tracking
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> Reports & Analytics
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> Public Storefront
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> UPI Integration
+            </div>
+            <div class="flex items-center gap-2">
+              <span>✅</span> Multi-language
+            </div>
+          </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="mt-6 bg-gray-50 rounded-2xl p-6">
+          <h3 class="font-bold text-gray-800 mb-4">🛠️ Built With</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-3 py-1 bg-white rounded-full text-sm">React</span>
+            <span class="px-3 py-1 bg-white rounded-full text-sm">Node.js</span>
+            <span class="px-3 py-1 bg-white rounded-full text-sm">MongoDB</span>
+            <span class="px-3 py-1 bg-white rounded-full text-sm">Express</span>
+            <span class="px-3 py-1 bg-white rounded-full text-sm">Tailwind CSS</span>
+            <span class="px-3 py-1 bg-white rounded-full text-sm">n8n</span>
+            <span class="px-3 py-1 bg-white rounded-full text-sm">React Native</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center py-8 text-gray-500">
+    <p>ShopSmart Pro - Digital Udhaar Khata</p>
+    <p class="text-sm mt-1">Made with ❤️ for Indian Shopkeepers</p>
+  </div>
+
+  <script>
+    const descriptions = {
+      'login': {
+        title: '🔐 Login / Register',
+        features: [
+          'Simple mobile number + password login',
+          'OTP verification for security',
+          'Quick registration in 2 minutes',
+          'Hindi + English support'
+        ]
+      },
+      'dashboard': {
+        title: '📊 Dashboard',
+        features: [
+          'Total Udhaar at a glance',
+          'Today\'s collection summary',
+          'Quick action buttons',
+          'Recent transactions list',
+          'Overdue alerts'
+        ]
+      },
+      'customers': {
+        title: '👥 Customer List',
+        features: [
+          'All customers with balances',
+          'Search & filter options',
+          'Overdue indicators',
+          'Quick contact buttons',
+          'Sort by amount/name/date'
+        ]
+      },
+      'customer-detail': {
+        title: '👤 Customer Detail',
+        features: [
+          'Complete transaction history',
+          'Add credit or payment',
+          'One-tap WhatsApp/Call',
+          'Send payment reminder',
+          'Running balance view'
+        ]
+      },
+      'add-transaction': {
+        title: '💰 Add Entry',
+        features: [
+          'Credit (Udhaar) entry',
+          'Payment recording',
+          'Add item details',
+          'Quick amount buttons',
+          'Auto balance update'
+        ]
+      },
+      'products': {
+        title: '📦 Product Inventory',
+        features: [
+          'Product catalog',
+          'Stock tracking',
+          'Low stock alerts',
+          'Category management',
+          'Barcode support'
+        ]
+      },
+      'invoice': {
+        title: '🧾 Invoice',
+        features: [
+          'Professional invoice format',
+          'Auto calculation',
+          'WhatsApp share',
+          'Print option',
+          'UPI payment link'
+        ]
+      },
+      'reports': {
+        title: '📈 Reports & Analytics',
+        features: [
+          'Daily/Weekly/Monthly reports',
+          'Sales trends chart',
+          'Collection tracking',
+          'Top customers list',
+          'Export options'
+        ]
+      },
+      'storefront': {
+        title: '🏪 Public Storefront',
+        features: [
+          'Your own store page',
+          'Product showcase',
+          'Contact buttons',
+          'Share on social media',
+          'Customer reviews'
+        ]
+      },
+      'reminders': {
+        title: '📱 Payment Reminders',
+        features: [
+          'WhatsApp integration',
+          'SMS support',
+          'Bulk reminders',
+          'Custom messages',
+          'Auto-scheduling (n8n)'
+        ]
+      }
+    };
+
+    function showScreen(screenId) {
+      // Hide all screens
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      // Show selected screen
+      document.getElementById(screenId).classList.add('active');
+      
+      // Update nav buttons
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update description
+      const desc = descriptions[screenId];
+      const descEl = document.getElementById('feature-description');
+      descEl.innerHTML = `
+        <h2 class="text-xl font-bold text-gray-800 mb-4">${desc.title}</h2>
+        <ul class="space-y-3 text-gray-600">
+          ${desc.features.map(f => `
+            <li class="flex items-start gap-2">
+              <span class="text-green-500">✓</span>
+              <span>${f}</span>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+    }
+  </script>
+</body>
+</html>

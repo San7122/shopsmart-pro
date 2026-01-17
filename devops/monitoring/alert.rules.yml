@@ -1,0 +1,262 @@
+# ShopSmart Pro - Alert Rules
+
+groups:
+  # ============================================================
+  # APPLICATION ALERTS
+  # ============================================================
+  - name: shopsmart-application
+    rules:
+      # API Down
+      - alert: APIDown
+        expr: up{job="shopsmart-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ShopSmart API is down"
+          description: "The ShopSmart Pro API has been down for more than 1 minute."
+
+      # High API Response Time
+      - alert: HighAPIResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="shopsmart-backend"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile API response time is above 1 second."
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for the last 5 minutes."
+
+      # Too Many 4xx Errors
+      - alert: HighClientErrors
+        expr: rate(http_requests_total{status=~"4.."}[5m]) / rate(http_requests_total[5m]) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High client error rate"
+          description: "Client error rate (4xx) is above 20%."
+
+  # ============================================================
+  # DATABASE ALERTS
+  # ============================================================
+  - name: shopsmart-database
+    rules:
+      # MongoDB Down
+      - alert: MongoDBDown
+        expr: up{job="mongodb"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MongoDB is down"
+          description: "MongoDB instance is not responding."
+
+      # MongoDB High Connections
+      - alert: MongoDBHighConnections
+        expr: mongodb_connections_current / mongodb_connections_available * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MongoDB connection pool almost full"
+          description: "MongoDB is using {{ $value }}% of available connections."
+
+      # MongoDB Slow Queries
+      - alert: MongoDBSlowQueries
+        expr: rate(mongodb_op_latencies_latency_total[5m]) > 1000000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MongoDB slow queries detected"
+          description: "Average query latency is above 1 second."
+
+      # Redis Down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is not responding."
+
+      # Redis High Memory
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis is using {{ $value }}% of max memory."
+
+  # ============================================================
+  # INFRASTRUCTURE ALERTS
+  # ============================================================
+  - name: shopsmart-infrastructure
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80% for the last 5 minutes."
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 85%."
+
+      # Critical Memory Usage
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage"
+          description: "Memory usage is above 95%. Server may crash."
+
+      # Low Disk Space
+      - alert: LowDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Disk usage is above 80% on {{ $labels.mountpoint }}."
+
+      # Critical Disk Space
+      - alert: CriticalDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space"
+          description: "Disk usage is above 95% on {{ $labels.mountpoint }}. Immediate action required."
+
+  # ============================================================
+  # CONTAINER ALERTS
+  # ============================================================
+  - name: shopsmart-containers
+    rules:
+      # Container Restart
+      - alert: ContainerRestarting
+        expr: rate(container_restart_count[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container restarting"
+          description: "Container {{ $labels.name }} is restarting frequently."
+
+      # Container High CPU
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container high CPU"
+          description: "Container {{ $labels.name }} is using more than 80% CPU."
+
+      # Container High Memory
+      - alert: ContainerHighMemory
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container high memory"
+          description: "Container {{ $labels.name }} is using more than 80% of memory limit."
+
+  # ============================================================
+  # ENDPOINT MONITORING
+  # ============================================================
+  - name: shopsmart-endpoints
+    rules:
+      # Endpoint Down
+      - alert: EndpointDown
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Endpoint is down"
+          description: "Endpoint {{ $labels.instance }} is not responding."
+
+      # SSL Certificate Expiring
+      - alert: SSLCertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 14
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in less than 14 days."
+
+      # SSL Certificate Critical
+      - alert: SSLCertificateCritical
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 3
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSL certificate expiring very soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in less than 3 days."
+
+  # ============================================================
+  # BUSINESS ALERTS
+  # ============================================================
+  - name: shopsmart-business
+    rules:
+      # No New Registrations
+      - alert: NoNewRegistrations
+        expr: increase(shopsmart_registrations_total[24h]) == 0
+        for: 6h
+        labels:
+          severity: info
+        annotations:
+          summary: "No new registrations"
+          description: "No new user registrations in the last 24 hours."
+
+      # Low Transaction Volume
+      - alert: LowTransactionVolume
+        expr: increase(shopsmart_transactions_total[1h]) < 10
+        for: 2h
+        labels:
+          severity: info
+        annotations:
+          summary: "Low transaction volume"
+          description: "Transaction volume is unusually low."
+
+      # n8n Workflow Failures
+      - alert: N8NWorkflowFailures
+        expr: increase(n8n_workflow_errors_total[1h]) > 5
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "n8n workflow failures"
+          description: "Multiple n8n workflow failures detected."

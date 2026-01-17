@@ -1,0 +1,242 @@
+{
+  "name": "ShopSmart - AI Business Insights",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtDay": 1,
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "weekly-trigger",
+      "name": "Weekly Monday 8 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SHOPSMART_API_URL}}/api/reports/weekly-data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-weekly-data",
+      "name": "Fetch Weekly Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "ShopSmart API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "users",
+        "options": {}
+      },
+      "id": "split-users",
+      "name": "Split by User",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare data for AI analysis\nconst user = $input.item.json;\n\nconst analysisData = {\n  userId: user.userId,\n  userName: user.name,\n  userPhone: user.phone,\n  shopName: user.shopName,\n  shopType: user.shopType,\n  \n  // Weekly metrics\n  weeklyCredit: user.weeklyCredit,\n  weeklyPayments: user.weeklyPayments,\n  weeklyTransactions: user.weeklyTransactions,\n  newCustomers: user.newCustomers,\n  \n  // Customer insights\n  totalCustomers: user.totalCustomers,\n  customersWithHighBalance: user.customersWithHighBalance,\n  overdueAmount: user.overdueAmount,\n  overdueCustomers: user.overdueCustomers,\n  avgPaymentCycle: user.avgPaymentCycle,\n  \n  // Inventory (if applicable)\n  lowStockProducts: user.lowStockProducts || [],\n  topSellingProducts: user.topSellingProducts || [],\n  \n  // Historical comparison\n  creditGrowth: user.creditGrowthPct,\n  paymentGrowth: user.paymentGrowthPct,\n  \n  // For AI prompt\n  dataForAI: JSON.stringify({\n    shop_type: user.shopType,\n    weekly_credit: user.weeklyCredit,\n    weekly_payments: user.weeklyPayments,\n    total_receivables: user.totalReceivables,\n    overdue_amount: user.overdueAmount,\n    overdue_customers: user.overdueCustomers,\n    avg_payment_days: user.avgPaymentCycle,\n    credit_growth: user.creditGrowthPct,\n    payment_growth: user.paymentGrowthPct,\n    top_customers_owing: user.topCustomersOwing || []\n  }, null, 2)\n};\n\nreturn { json: analysisData };"
+      },
+      "id": "prepare-ai-data",
+      "name": "Prepare AI Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a helpful business advisor for small Indian retail shopkeepers. Analyze their weekly business data and provide actionable insights in simple Hindi (Hinglish). Keep advice practical and specific. Format your response with emojis and clear sections. Focus on:\n1. Cash flow health\n2. Collection priorities \n3. Business growth tips\n4. Risk alerts\n\nKeep total response under 500 words. Be encouraging but honest."
+            },
+            {
+              "role": "user",
+              "content": "=Analyze this weekly business data for a {{ $json.shopType }} shop named \"{{ $json.shopName }}\":\n\n{{ $json.dataForAI }}\n\nProvide 3-4 key insights and actionable recommendations in Hinglish."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 800
+        }
+      },
+      "id": "openai-analysis",
+      "name": "AI Analysis (OpenAI)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [1050, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "6",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format AI response for WhatsApp\nconst input = $input.item.json;\nconst aiResponse = input.message?.content || input.text || 'Analysis not available';\n\n// Get user data from previous node\nconst userData = $('Prepare AI Data').item.json;\n\nconst formatted = {\n  userId: userData.userId,\n  userName: userData.userName,\n  userPhone: userData.userPhone,\n  shopName: userData.shopName,\n  aiInsights: aiResponse,\n  \n  // Create WhatsApp message\n  whatsappMessage: `🤖 *AI Business Insights*\\n📊 ${userData.shopName}\\n\\n${aiResponse}\\n\\n━━━━━━━━━━━━━━━━\\n_Powered by ShopSmart Pro AI_ 💜`\n};\n\nreturn { json: formatted };"
+      },
+      "id": "format-response",
+      "name": "Format AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "={{$env.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "=+91{{ $json.userPhone }}",
+        "messageType": "text",
+        "textBody": "={{ $json.whatsappMessage }}"
+      },
+      "id": "send-insights",
+      "name": "Send AI Insights",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2",
+          "name": "WhatsApp Business API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SHOPSMART_API_URL}}/api/n8n/save-ai-insights",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"userId\": \"{{ $json.userId }}\",\n  \"insights\": {{ JSON.stringify($json.aiInsights) }},\n  \"generatedAt\": \"{{ $now.toISO() }}\",\n  \"type\": \"weekly\"\n}",
+        "options": {}
+      },
+      "id": "save-insights",
+      "name": "Save to Database",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "ShopSmart API Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Weekly Monday 8 AM": {
+      "main": [
+        [
+          {
+            "node": "Fetch Weekly Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Weekly Data": {
+      "main": [
+        [
+          {
+            "node": "Split by User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split by User": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Data": {
+      "main": [
+        [
+          {
+            "node": "AI Analysis (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analysis (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Format AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format AI Response": {
+      "main": [
+        [
+          {
+            "node": "Send AI Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send AI Insights": {
+      "main": [
+        [
+          {
+            "node": "Save to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ai",
+      "id": "5"
+    },
+    {
+      "name": "insights",
+      "id": "6"
+    }
+  ]
+}

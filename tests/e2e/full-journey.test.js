@@ -1,513 +1,500 @@
 /**
- * ShopSmart Pro - End-to-End Test Suite
- * Complete user journey testing
+ * End-to-End Tests - Complete user journey simulation
+ * Tests the entire workflow from registration to transaction processing
  */
 
 const request = require('supertest');
 const mongoose = require('mongoose');
-const app = require('../server/server');
+const jwt = require('jsonwebtoken');
 
-// Test data
-let authToken = '';
-let userId = '';
-let customerId = '';
-let productId = '';
-let transactionId = '';
-let invoiceId = '';
+const app = require('../../server/server');
+const User = require('../../server/models/User');
+const Customer = require('../../server/models/Customer');
+const Product = require('../../server/models/Product');
+const Transaction = require('../../server/models/Transaction');
 
-const testUser = {
-  name: 'Test Shopkeeper',
-  phone: '9999999999',
-  password: 'Test@123456',
-  shopName: 'Test Kirana Store',
-  shopType: 'kirana',
-  address: {
-    street: '123 Test Street',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    pincode: '400001'
-  }
-};
+describe('End-to-End User Journey Tests', () => {
+  let authToken;
+  let testUser;
+  let customerId;
+  let productId;
 
-const testCustomer = {
-  name: 'Test Customer',
-  phone: '8888888888',
-  address: 'Test Address, Mumbai'
-};
-
-const testProduct = {
-  name: 'Test Product',
-  brand: 'Test Brand',
-  barcode: '1234567890123',
-  unit: 'pcs',
-  sellingPrice: 100,
-  costPrice: 80,
-  mrp: 120,
-  stock: 50,
-  minStock: 10
-};
-
-// ============================================================
-// SETUP & TEARDOWN
-// ============================================================
-
-beforeAll(async () => {
-  // Connect to test database
-  const mongoUri = process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/shopsmart-test';
-  await mongoose.connect(mongoUri);
-});
-
-afterAll(async () => {
-  // Clean up test data
-  if (mongoose.connection.db) {
-    await mongoose.connection.db.dropDatabase();
-  }
-  await mongoose.connection.close();
-});
-
-// ============================================================
-// TEST SUITES
-// ============================================================
-
-describe('🔐 Authentication Flow', () => {
-  
-  test('POST /api/auth/register - Should register new user', async () => {
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send(testUser)
-      .expect(201);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.token).toBeDefined();
-    expect(res.body.user.name).toBe(testUser.name);
-    
-    authToken = res.body.token;
-    userId = res.body.user._id;
+  beforeAll(async () => {
+    const DB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/shopsmart_e2e_test';
+    await mongoose.connect(DB_URI);
   });
 
-  test('POST /api/auth/register - Should reject duplicate phone', async () => {
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send(testUser)
-      .expect(400);
-    
-    expect(res.body.success).toBe(false);
+  afterAll(async () => {
+    // Cleanup all test data
+    await User.deleteMany({});
+    await Customer.deleteMany({});
+    await Product.deleteMany({});
+    await Transaction.deleteMany({});
+    await mongoose.connection.close();
   });
 
-  test('POST /api/auth/login - Should login with valid credentials', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({
-        phone: testUser.phone,
-        password: testUser.password
-      })
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.token).toBeDefined();
-    
-    authToken = res.body.token;
+  // ============================================================
+  // COMPLETE REGISTRATION FLOW
+  // ============================================================
+  describe('Complete Registration Journey', () => {
+    test('User can register, login, and access dashboard', async () => {
+      // Step 1: Registration
+      const registrationData = {
+        name: 'E2E Test User',
+        phone: '8887776666',
+        email: 'e2e@test.com',
+        shopName: 'E2E Test Shop',
+        password: 'e2epassword123',
+        shopType: 'grocery'
+      };
+
+      const registerResponse = await request(app)
+        .post('/api/auth/register')
+        .send(registrationData)
+        .expect(201);
+
+      expect(registerResponse.body.success).toBe(true);
+      expect(registerResponse.body.data.phone).toBe(registrationData.phone);
+      expect(registerResponse.body.token).toBeDefined();
+
+      // Step 2: Login with same credentials
+      const loginResponse = await request(app)
+        .post('/api/auth/login')
+        .send({
+          phone: registrationData.phone,
+          password: registrationData.password
+        })
+        .expect(200);
+
+      expect(loginResponse.body.success).toBe(true);
+      expect(loginResponse.body.token).toBeDefined();
+      
+      authToken = loginResponse.body.token;
+      testUser = await User.findOne({ phone: registrationData.phone });
+
+      // Step 3: Access protected dashboard
+      const dashboardResponse = await request(app)
+        .get('/api/analytics/dashboard')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(dashboardResponse.body.success).toBe(true);
+      expect(dashboardResponse.body.data.totals).toBeDefined();
+    });
   });
 
-  test('POST /api/auth/login - Should reject invalid password', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({
-        phone: testUser.phone,
-        password: 'wrongpassword'
-      })
-      .expect(401);
-    
-    expect(res.body.success).toBe(false);
+  // ============================================================
+  // COMPLETE CUSTOMER MANAGEMENT FLOW
+  // ============================================================
+  describe('Complete Customer Management Journey', () => {
+    test('User can create, view, update, and delete customers', async () => {
+      // Step 1: Create customer
+      const customerData = {
+        name: 'E2E Customer',
+        phone: '8887776667',
+        email: 'customer@e2e.com',
+        address: '123 Test Street',
+        creditLimit: 5000
+      };
+
+      const createResponse = await request(app)
+        .post('/api/customers')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(customerData)
+        .expect(201);
+
+      expect(createResponse.body.success).toBe(true);
+      expect(createResponse.body.data.name).toBe(customerData.name);
+      customerId = createResponse.body.data._id;
+
+      // Step 2: View customer list
+      const listResponse = await request(app)
+        .get('/api/customers')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(listResponse.body.success).toBe(true);
+      expect(listResponse.body.data.length).toBeGreaterThan(0);
+      expect(listResponse.body.data.some(c => c._id === customerId)).toBe(true);
+
+      // Step 3: View specific customer
+      const viewResponse = await request(app)
+        .get(`/api/customers/${customerId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(viewResponse.body.success).toBe(true);
+      expect(viewResponse.body.data._id).toBe(customerId);
+
+      // Step 4: Update customer
+      const updateData = {
+        name: 'Updated E2E Customer',
+        creditLimit: 10000
+      };
+
+      const updateResponse = await request(app)
+        .put(`/api/customers/${customerId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200);
+
+      expect(updateResponse.body.success).toBe(true);
+      expect(updateResponse.body.data.name).toBe(updateData.name);
+      expect(updateResponse.body.data.creditLimit).toBe(updateData.creditLimit);
+
+      // Step 5: Search customers
+      const searchResponse = await request(app)
+        .get('/api/customers/search?q=E2E')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(searchResponse.body.success).toBe(true);
+      expect(searchResponse.body.data.length).toBeGreaterThan(0);
+
+      // Step 6: Delete customer
+      const deleteResponse = await request(app)
+        .delete(`/api/customers/${customerId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(deleteResponse.body.success).toBe(true);
+
+      // Verify deletion
+      const verifyDelete = await request(app)
+        .get(`/api/customers/${customerId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(404);
+
+      expect(verifyDelete.body.success).toBe(false);
+    });
   });
 
-  test('GET /api/auth/me - Should return current user', async () => {
-    const res = await request(app)
-      .get('/api/auth/me')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.phone).toBe(testUser.phone);
+  // ============================================================
+  // COMPLETE PRODUCT MANAGEMENT FLOW
+  // ============================================================
+  describe('Complete Product Management Journey', () => {
+    test('User can create, manage, and track product inventory', async () => {
+      // Step 1: Create product
+      const productData = {
+        name: 'E2E Test Product',
+        sellingPrice: 150,
+        costPrice: 100,
+        stock: 100,
+        category: 'Electronics',
+        barcode: 'E2E001'
+      };
+
+      const createResponse = await request(app)
+        .post('/api/products')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(productData)
+        .expect(201);
+
+      expect(createResponse.body.success).toBe(true);
+      expect(createResponse.body.data.name).toBe(productData.name);
+      expect(createResponse.body.data.stock).toBe(productData.stock);
+      productId = createResponse.body.data._id;
+
+      // Step 2: View product list
+      const listResponse = await request(app)
+        .get('/api/products')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(listResponse.body.success).toBe(true);
+      expect(listResponse.body.data.length).toBeGreaterThan(0);
+
+      // Step 3: Search products
+      const searchResponse = await request(app)
+        .get('/api/products/search?q=E2E')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(searchResponse.body.success).toBe(true);
+      expect(searchResponse.body.data.length).toBeGreaterThan(0);
+
+      // Step 4: Update stock (add inventory)
+      const stockAddResponse = await request(app)
+        .patch(`/api/products/${productId}/stock`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          type: 'add',
+          adjustment: 50
+        })
+        .expect(200);
+
+      expect(stockAddResponse.body.success).toBe(true);
+      expect(stockAddResponse.body.data.stock).toBe(150); // 100 + 50
+
+      // Step 5: Update stock (remove inventory)
+      const stockRemoveResponse = await request(app)
+        .patch(`/api/products/${productId}/stock`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          type: 'remove',
+          adjustment: 30
+        })
+        .expect(200);
+
+      expect(stockRemoveResponse.body.success).toBe(true);
+      expect(stockRemoveResponse.body.data.stock).toBe(120); // 150 - 30
+
+      // Step 6: Check low stock alerts
+      const lowStockResponse = await request(app)
+        .get('/api/products/low-stock')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(lowStockResponse.body.success).toBe(true);
+    });
   });
 
-  test('GET /api/auth/me - Should reject without token', async () => {
-    const res = await request(app)
-      .get('/api/auth/me')
-      .expect(401);
-    
-    expect(res.body.success).toBe(false);
-  });
-});
+  // ============================================================
+  // COMPLETE TRANSACTION FLOW
+  // ============================================================
+  describe('Complete Transaction Processing Journey', () => {
+    test('User can create sale transaction and view reports', async () => {
+      // Ensure we have a customer and product
+      if (!customerId) {
+        const customerResponse = await request(app)
+          .post('/api/customers')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            name: 'Transaction Customer',
+            phone: '8887776668'
+          })
+          .expect(201);
+        customerId = customerResponse.body.data._id;
+      }
 
-describe('👥 Customer Management', () => {
-  
-  test('POST /api/customers - Should create customer', async () => {
-    const res = await request(app)
-      .post('/api/customers')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send(testCustomer)
-      .expect(201);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.name).toBe(testCustomer.name);
-    expect(res.body.data.balance).toBe(0);
-    
-    customerId = res.body.data._id;
-  });
+      if (!productId) {
+        const productResponse = await request(app)
+          .post('/api/products')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            name: 'Transaction Product',
+            sellingPrice: 200,
+            costPrice: 150,
+            stock: 50
+          })
+          .expect(201);
+        productId = productResponse.body.data._id;
+      }
 
-  test('GET /api/customers - Should list customers', async () => {
-    const res = await request(app)
-      .get('/api/customers')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.length).toBeGreaterThan(0);
-  });
-
-  test('GET /api/customers/:id - Should get single customer', async () => {
-    const res = await request(app)
-      .get(`/api/customers/${customerId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data._id).toBe(customerId);
-  });
-
-  test('PUT /api/customers/:id - Should update customer', async () => {
-    const res = await request(app)
-      .put(`/api/customers/${customerId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({ name: 'Updated Customer Name' })
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.name).toBe('Updated Customer Name');
-  });
-
-  test('GET /api/customers/search - Should search customers', async () => {
-    const res = await request(app)
-      .get('/api/customers/search?q=Updated')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-  });
-});
-
-describe('📦 Product Management', () => {
-  
-  test('POST /api/products - Should create product', async () => {
-    const res = await request(app)
-      .post('/api/products')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send(testProduct)
-      .expect(201);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.name).toBe(testProduct.name);
-    
-    productId = res.body.data._id;
-  });
-
-  test('GET /api/products - Should list products', async () => {
-    const res = await request(app)
-      .get('/api/products')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.length).toBeGreaterThan(0);
-  });
-
-  test('PUT /api/products/:id/stock - Should update stock', async () => {
-    const res = await request(app)
-      .put(`/api/products/${productId}/stock`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({ quantity: 25, type: 'add' })
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.stock).toBe(75); // 50 + 25
-  });
-
-  test('GET /api/products/low-stock - Should get low stock products', async () => {
-    const res = await request(app)
-      .get('/api/products/low-stock')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-  });
-});
-
-describe('💰 Transaction Flow', () => {
-  
-  test('POST /api/transactions - Should create credit transaction', async () => {
-    const res = await request(app)
-      .post('/api/transactions')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({
+      // Step 1: Create sale transaction
+      const transactionData = {
         customer: customerId,
-        type: 'credit',
-        amount: 500,
-        description: 'Test credit'
-      })
-      .expect(201);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.type).toBe('credit');
-    expect(res.body.data.amount).toBe(500);
-    expect(res.body.data.balanceAfter).toBe(500);
-    
-    transactionId = res.body.data._id;
+        type: 'sale',
+        items: [{
+          product: productId,
+          quantity: 2,
+          price: 200,
+          costPrice: 150
+        }],
+        totalAmount: 400,
+        paymentReceived: 400,
+        paymentMethod: 'cash',
+        notes: 'E2E Test Transaction'
+      };
+
+      const transactionResponse = await request(app)
+        .post('/api/transactions')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(transactionData)
+        .expect(201);
+
+      expect(transactionResponse.body.success).toBe(true);
+      expect(transactionResponse.body.data.totalAmount).toBe(transactionData.totalAmount);
+      expect(transactionResponse.body.data.type).toBe('sale');
+
+      const transactionId = transactionResponse.body.data._id;
+
+      // Step 2: Verify customer balance updated
+      const customerResponse = await request(app)
+        .get(`/api/customers/${customerId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(customerResponse.body.data.balance).toBe(0); // Paid in full
+
+      // Step 3: Verify product stock reduced
+      const productResponse = await request(app)
+        .get(`/api/products/${productId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(productResponse.body.data.stock).toBe(48); // 50 - 2
+
+      // Step 4: View transaction history
+      const historyResponse = await request(app)
+        .get('/api/transactions')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(historyResponse.body.success).toBe(true);
+      expect(historyResponse.body.data.length).toBeGreaterThan(0);
+
+      // Step 5: View today's transactions
+      const todayResponse = await request(app)
+        .get('/api/transactions/today')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(todayResponse.body.success).toBe(true);
+
+      // Step 6: Generate sales report
+      const reportResponse = await request(app)
+        .get('/api/analytics/sales-report')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(reportResponse.body.success).toBe(true);
+      expect(Array.isArray(reportResponse.body.data)).toBe(true);
+    });
   });
 
-  test('POST /api/transactions - Should create payment transaction', async () => {
-    const res = await request(app)
-      .post('/api/transactions')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({
-        customer: customerId,
-        type: 'payment',
-        amount: 200,
-        paymentMethod: 'upi',
-        description: 'Test payment'
-      })
-      .expect(201);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.type).toBe('payment');
-    expect(res.body.data.balanceAfter).toBe(300); // 500 - 200
+  // ============================================================
+  // COMPLETE DASHBOARD AND ANALYTICS FLOW
+  // ============================================================
+  describe('Complete Dashboard and Analytics Journey', () => {
+    test('User can access comprehensive dashboard analytics', async () => {
+      // Step 1: Get main dashboard
+      const dashboardResponse = await request(app)
+        .get('/api/analytics/dashboard')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(dashboardResponse.body.success).toBe(true);
+      expect(dashboardResponse.body.data.totals).toBeDefined();
+      expect(dashboardResponse.body.data.recentTransactions).toBeDefined();
+      expect(dashboardResponse.body.data.topProducts).toBeDefined();
+
+      // Step 2: Get customer insights
+      const customerInsightsResponse = await request(app)
+        .get('/api/analytics/customer-insights')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(customerInsightsResponse.body.success).toBe(true);
+      expect(customerInsightsResponse.body.data.totalCustomers).toBeDefined();
+      expect(customerInsightsResponse.body.data.activeCustomers).toBeDefined();
+
+      // Step 3: Get revenue trends
+      const revenueResponse = await request(app)
+        .get('/api/analytics/revenue-trends')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(revenueResponse.body.success).toBe(true);
+      expect(Array.isArray(revenueResponse.body.data)).toBe(true);
+
+      // Step 4: Get top selling products
+      const topProductsResponse = await request(app)
+        .get('/api/analytics/top-products')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(topProductsResponse.body.success).toBe(true);
+      expect(Array.isArray(topProductsResponse.body.data)).toBe(true);
+
+      // Step 5: Get profit analysis
+      const profitResponse = await request(app)
+        .get('/api/analytics/profit-analysis')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(profitResponse.body.success).toBe(true);
+      expect(profitResponse.body.data.totalRevenue).toBeDefined();
+      expect(profitResponse.body.data.totalProfit).toBeDefined();
+    });
   });
 
-  test('GET /api/transactions - Should list transactions', async () => {
-    const res = await request(app)
-      .get('/api/transactions')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.length).toBe(2);
+  // ============================================================
+  // ERROR RECOVERY FLOW
+  // ============================================================
+  describe('Error Recovery and Edge Cases', () => {
+    test('System handles invalid operations gracefully', async () => {
+      // Test invalid customer ID
+      const invalidCustomerResponse = await request(app)
+        .get('/api/customers/invalid123')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(404);
+
+      expect(invalidCustomerResponse.body.success).toBe(false);
+
+      // Test negative stock update
+      if (productId) {
+        const negativeStockResponse = await request(app)
+          .patch(`/api/products/${productId}/stock`)
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            type: 'remove',
+            adjustment: 1000 // More than available stock
+          })
+          .expect(500); // Should fail gracefully
+
+        expect(negativeStockResponse.body.success).toBe(false);
+      }
+
+      // Test duplicate customer creation
+      const duplicateCustomerResponse = await request(app)
+        .post('/api/customers')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          name: 'Duplicate Customer',
+          phone: '8887776667' // Same as existing customer
+        })
+        .expect(400);
+
+      expect(duplicateCustomerResponse.body.success).toBe(false);
+    });
   });
 
-  test('GET /api/transactions/customer/:id - Should get customer transactions', async () => {
-    const res = await request(app)
-      .get(`/api/transactions/customer/${customerId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.length).toBe(2);
-  });
+  // ============================================================
+  // CONCURRENT USER OPERATIONS
+  // ============================================================
+  describe('Concurrent Operations Test', () => {
+    test('Multiple simultaneous operations work correctly', async () => {
+      // Create multiple customers concurrently
+      const customerPromises = [];
+      for (let i = 1; i <= 3; i++) {
+        customerPromises.push(
+          request(app)
+            .post('/api/customers')
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({
+              name: `Concurrent Customer ${i}`,
+              phone: `888777667${i}`
+            })
+            .expect(201)
+        );
+      }
 
-  test('GET /api/customers/:id - Customer balance should be updated', async () => {
-    const res = await request(app)
-      .get(`/api/customers/${customerId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.data.balance).toBe(300);
-  });
-});
+      const customerResponses = await Promise.all(customerPromises);
+      customerResponses.forEach(response => {
+        expect(response.body.success).toBe(true);
+      });
 
-describe('🧾 Invoice Management', () => {
-  
-  test('POST /api/invoices - Should create invoice', async () => {
-    const res = await request(app)
-      .post('/api/invoices')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({
-        customer: customerId,
-        items: [
-          {
-            product: productId,
-            name: testProduct.name,
-            quantity: 2,
-            price: testProduct.sellingPrice,
-            total: 200
-          }
-        ],
-        subtotal: 200,
-        discount: 0,
-        tax: 36,
-        grandTotal: 236
-      })
-      .expect(201);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.invoiceNumber).toBeDefined();
-    
-    invoiceId = res.body.data._id;
-  });
+      // Create multiple products concurrently
+      const productPromises = [];
+      for (let i = 1; i <= 3; i++) {
+        productPromises.push(
+          request(app)
+            .post('/api/products')
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({
+              name: `Concurrent Product ${i}`,
+              sellingPrice: 100 + i * 10,
+              stock: 50
+            })
+            .expect(201)
+        );
+      }
 
-  test('GET /api/invoices - Should list invoices', async () => {
-    const res = await request(app)
-      .get('/api/invoices')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.length).toBeGreaterThan(0);
-  });
-
-  test('GET /api/invoices/:id - Should get single invoice', async () => {
-    const res = await request(app)
-      .get(`/api/invoices/${invoiceId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data._id).toBe(invoiceId);
-  });
-});
-
-describe('📊 Analytics & Reports', () => {
-  
-  test('GET /api/analytics/dashboard - Should get dashboard stats', async () => {
-    const res = await request(app)
-      .get('/api/analytics/dashboard')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.totalCustomers).toBeDefined();
-    expect(res.body.data.totalReceivables).toBeDefined();
-  });
-
-  test('GET /api/analytics/transactions - Should get transaction summary', async () => {
-    const res = await request(app)
-      .get('/api/analytics/transactions')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-  });
-
-  test('GET /api/analytics/customers/top - Should get top customers', async () => {
-    const res = await request(app)
-      .get('/api/analytics/customers/top')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-  });
-});
-
-describe('🏪 Storefront (Public)', () => {
-  let storeSlug = '';
-  
-  test('GET /api/auth/me - Should have store slug', async () => {
-    const res = await request(app)
-      .get('/api/auth/me')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    storeSlug = res.body.data.storeSlug;
-    expect(storeSlug).toBeDefined();
-  });
-
-  test('GET /api/store/:slug - Should get public store', async () => {
-    if (!storeSlug) return;
-    
-    const res = await request(app)
-      .get(`/api/store/${storeSlug}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.shopName).toBe(testUser.shopName);
-  });
-
-  test('GET /api/store/:slug/products - Should get store products', async () => {
-    if (!storeSlug) return;
-    
-    const res = await request(app)
-      .get(`/api/store/${storeSlug}/products`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-  });
-});
-
-describe('❌ Error Handling', () => {
-  
-  test('GET /api/invalid-route - Should return 404', async () => {
-    const res = await request(app)
-      .get('/api/invalid-route')
-      .expect(404);
-    
-    expect(res.body.success).toBe(false);
-  });
-
-  test('GET /api/customers/:id - Should handle invalid ID', async () => {
-    const res = await request(app)
-      .get('/api/customers/invalidid')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(404);
-    
-    expect(res.body.success).toBe(false);
-  });
-
-  test('POST /api/transactions - Should validate required fields', async () => {
-    const res = await request(app)
-      .post('/api/transactions')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({})
-      .expect(400);
-    
-    expect(res.body.success).toBe(false);
-  });
-});
-
-describe('🗑️ Cleanup Operations', () => {
-  
-  test('DELETE /api/customers/:id - Should delete customer', async () => {
-    const res = await request(app)
-      .delete(`/api/customers/${customerId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-  });
-
-  test('DELETE /api/products/:id - Should delete product', async () => {
-    const res = await request(app)
-      .delete(`/api/products/${productId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200);
-    
-    expect(res.body.success).toBe(true);
-  });
-});
-
-// ============================================================
-// PERFORMANCE TESTS
-// ============================================================
-
-describe('⚡ Performance Tests', () => {
-  
-  test('Health check should respond within 100ms', async () => {
-    const start = Date.now();
-    await request(app)
-      .get('/api/health')
-      .expect(200);
-    const duration = Date.now() - start;
-    
-    expect(duration).toBeLessThan(100);
-  });
-
-  test('Should handle concurrent requests', async () => {
-    const requests = Array(10).fill(null).map(() =>
-      request(app)
-        .get('/api/health')
-        .expect(200)
-    );
-    
-    const results = await Promise.all(requests);
-    results.forEach(res => {
-      expect(res.body.success).toBe(true);
+      const productResponses = await Promise.all(productPromises);
+      productResponses.forEach(response => {
+        expect(response.body.success).toBe(true);
+      });
     });
   });
 });

@@ -281,12 +281,21 @@ exports.updateStock = async (req, res) => {
     product.stock = newStock;
     await product.save();
 
+    // Calculate previous stock before the adjustment
+    let previousStock;
+    if (type === 'set') {
+      previousStock = null; // For set operations, there's no meaningful "previous" value
+    } else {
+      // For add/remove operations, calculate what stock was before adjustment
+      previousStock = type === 'add' ? product.stock - adjustment : product.stock + adjustment;
+    }
+    
     res.status(200).json({
       success: true,
       data: {
         productId: product._id,
         name: product.name,
-        previousStock: type === 'set' ? product.stock : product.stock - (type === 'add' ? adjustment : -adjustment),
+        previousStock: previousStock,
         currentStock: product.stock,
         adjustment,
         type
